@@ -1,0 +1,30 @@
+name: mirror
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  
+  workflow_dispatch:
+
+jobs:
+  sync-eden-upstream:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Set up Git config
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Fetch and check out upstream main
+        run: |
+          git remote add upstream https://github.com/yung-megafone/Epstein-Files || git remote set-url upstream https://github.com/yung-megafone/Epstein-Files
+          git fetch upstream
+          git checkout -B main upstream/main
+
+      - name: Force push to GitHub main branch
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git push origin main --force
